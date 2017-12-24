@@ -20,11 +20,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.fluentd.logger.FluentLogger;
+import org.slf4j.Marker;
+
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 
 import ch.qos.logback.classic.pattern.CallerDataConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import ch.qos.logback.more.appenders.marker.StructuredMarker;
+import ch.qos.logback.more.appenders.marker.StructuredMarkerUtil;
 
 public class DataFluentAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
     private FluentLogger fluentLogger;
@@ -56,7 +61,12 @@ public class DataFluentAppender extends UnsynchronizedAppenderBase<ILoggingEvent
         data.put("thread", rawData.getThreadName());
         data.put("level", rawData.getLevel());
         if (rawData.getMarker() != null) {
-            data.put("marker", rawData.getMarker());
+            Marker marker = rawData.getMarker();
+            if(marker instanceof StructuredMarker) {
+                StructuredMarkerUtil.mapInto(data, (StructuredMarker<Object>)marker);                
+            } else {
+                data.put("marker", rawData.getMarker().toString());
+            }
         }
         if (rawData.hasCallerData()) {
             data.put("caller", new CallerDataConverter().convert(rawData));

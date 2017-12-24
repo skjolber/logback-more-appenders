@@ -16,6 +16,8 @@
 package ch.qos.logback.more.appenders;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -23,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.Marker;
 import org.slf4j.helpers.BasicMarkerFactory;
+import org.slf4j.helpers.MyMapMarker;
 
 public class LogbackAppenderTest {
 
@@ -66,6 +69,18 @@ public class LogbackAppenderTest {
         Thread.sleep(1000); // Wait a moment because these log is being appended asynchronous...
     }
 
+    @Test
+    public void logMapMarker() throws InterruptedException {
+    	Map<String, Object> map = new HashMap<String, Object>();
+    	map.put("key", "value");
+        Marker myMarker = new MyMapMarker<Object>("my", map);
+        
+        LOG.debug(myMarker, "Test the map marker.");
+
+        Thread.sleep(1000); // Wait a moment because these log is being appended asynchronous...
+    }
+
+    
     @Test
     public void logThrowable() throws InterruptedException {
         LOG.info("Without Exception.");

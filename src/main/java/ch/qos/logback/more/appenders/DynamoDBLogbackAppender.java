@@ -19,9 +19,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Marker;
+
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Layout;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import ch.qos.logback.more.appenders.marker.StructuredMarker;
+import ch.qos.logback.more.appenders.marker.StructuredMarkerUtil;
 
 import com.amazonaws.auth.PropertiesCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
@@ -71,6 +75,12 @@ public class DynamoDBLogbackAppender extends UnsynchronizedAppenderBase<ILogging
             data.put("id", new AttributeValue().withN(String.valueOf(++id)));
             data.put("msg", new AttributeValue().withS(msg));
 
+            if (rawData.getMarker() != null) {
+                Marker marker = rawData.getMarker();
+                if(marker instanceof StructuredMarker) {
+                    StructuredMarkerUtil.mapInto(data, (StructuredMarker<AttributeValue>)marker);                
+                }
+            }
             PutItemRequest itemRequest = new PutItemRequest().withTableName(
                     tableName).withItem(data);
             dynamoClient.putItem(itemRequest);

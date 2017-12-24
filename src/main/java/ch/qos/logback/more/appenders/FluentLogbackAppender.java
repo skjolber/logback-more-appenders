@@ -19,10 +19,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.fluentd.logger.FluentLogger;
+import org.slf4j.Marker;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Layout;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import ch.qos.logback.more.appenders.marker.StructuredMarker;
+import ch.qos.logback.more.appenders.marker.StructuredMarkerUtil;
 
 public class FluentLogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
@@ -50,6 +53,16 @@ public class FluentLogbackAppender extends UnsynchronizedAppenderBase<ILoggingEv
         }
         Map<String, Object> data = new HashMap<String, Object>(1);
         data.put("msg", msg);
+        
+        if (rawData.getMarker() != null) {
+            Marker marker = rawData.getMarker();
+            if(marker instanceof StructuredMarker) {
+                StructuredMarkerUtil.mapInto(data, (StructuredMarker<Object>)marker);                
+            } else {
+                data.put("marker", rawData.getMarker().toString());
+            }
+        }
+        
         if (label == null) {
             fluentLogger.log(tag, data);
         } else {

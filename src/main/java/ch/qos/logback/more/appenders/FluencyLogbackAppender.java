@@ -20,14 +20,19 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.Layout;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import ch.qos.logback.more.appenders.marker.StructuredMarker;
+import ch.qos.logback.more.appenders.marker.StructuredMarkerUtil;
+
 import org.komamitsu.fluency.EventTime;
 import org.komamitsu.fluency.Fluency;
+import org.slf4j.Marker;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +71,12 @@ public class FluencyLogbackAppender extends UnsynchronizedAppenderBase<ILoggingE
         data.put("thread", rawData.getThreadName());
         data.put("level", rawData.getLevel().levelStr);
         if (rawData.getMarker() != null) {
-            data.put("marker", rawData.getMarker().toString());
+            Marker marker = rawData.getMarker();
+            if(marker instanceof StructuredMarker) {
+                StructuredMarkerUtil.mapInto(data, (StructuredMarker<Object>)marker);                
+            } else {
+                data.put("marker", rawData.getMarker().toString());
+            }
         }
         if (rawData.hasCallerData()) {
             data.put("caller", new CallerDataConverter().convert(rawData));
